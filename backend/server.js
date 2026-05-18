@@ -5,8 +5,8 @@ const express = require('express');
 const { NestFactory } = require('@nestjs/core');
 const { ValidationPipe } = require('@nestjs/common');
 const { ExpressAdapter } = require('@nestjs/platform-express');
-const { AppModule } = require('../dist/app.module');
-const { HttpExceptionFilter } = require('../dist/filters/http-exception.filter');
+const { AppModule } = require('./dist/app.module');
+const { HttpExceptionFilter } = require('./dist/filters/http-exception.filter');
 
 const server = express();
 
