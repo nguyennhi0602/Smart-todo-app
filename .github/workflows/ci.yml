@@ -1,4 +1,4 @@
-name: CI
+name: CI / CD
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  backend:
-    name: Backend build
+  backend-ci:
+    name: Backend — build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -25,8 +25,8 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-  frontend:
-    name: Frontend build
+  frontend-ci:
+    name: Frontend — build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -46,3 +46,53 @@ jobs:
         run: npm run build
         env:
           CI: false
+
+  deploy-backend:
+    name: Deploy backend → Vercel
+    needs: backend-ci
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install -g vercel@latest
+
+      - name: Deploy
+        run: |
+          mkdir -p .vercel
+          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_BACKEND_PROJECT_ID }}"}' > .vercel/project.json
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+  deploy-frontend:
+    name: Deploy frontend → Vercel
+    needs: frontend-ci
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install -g vercel@latest
+
+      - name: Deploy
+        run: |
+          mkdir -p .vercel
+          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_FRONTEND_PROJECT_ID }}"}' > .vercel/project.json
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

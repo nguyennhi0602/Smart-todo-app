@@ -1,4 +1,4 @@
-const BASE = '/api/todos';
+const BASE = `${process.env.REACT_APP_API_URL || ''}/api/todos`;
 
 async function request(url, options = {}) {
   const res = await fetch(url, {
