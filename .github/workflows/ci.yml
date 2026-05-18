@@ -64,6 +64,9 @@ jobs:
 
       - run: npm install -g vercel@latest
 
+      - name: Build NestJS app
+        run: npm ci && npm run build
+
       - name: Deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
